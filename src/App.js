@@ -6,13 +6,47 @@ import Post from './pages/Post';
 import Member from './pages/Member';
 import Login from './pages/Login';
 import GuardRoute from './components/GuardRoute';
-
 import './App.css';
 const Home = React.lazy(() => import('./pages/Home'));
 
-
 function App() {
   const [isLogin, setLogin] = React.useState(false);
+
+  const routes = [
+    {
+      path: "/",
+      Component: Home,
+      props: {
+        exact: true,
+      }
+    },
+    {
+      path: "/about",
+      Component: About,
+    },
+    {
+      path: "/member",
+      Component: Member,
+      props: {
+        auth: true,
+        isLogin: isLogin,
+      }
+    },
+    {
+      path: "/post/:id",
+      Component: Post,
+    },
+    {
+      path: "/login",
+      Component: Login,
+      childProps: { setLogin },
+    },
+    {
+      path: "/category",
+      Component: Category,
+    },
+  ];
+
 
   return (
     <React.Suspense fallback={<div>Loading...</div>}>
@@ -34,25 +68,25 @@ function App() {
         </ul>
         <div className="main">
           <Switch>
-            <Route path="/about">
-              <About />
-              <Prompt message="Are You sure want to leave?" />
-            </Route>
-            <GuardRoute path="/member" isLogin={isLogin}>
-              <Member />
-            </GuardRoute>
-            <Route path="/login">
-              <Login setLogin={setLogin} />
-            </Route>
-            <Route path="/category">
-              <Category />
-            </Route>
-            <Route path="/post/:id">
-              <Post />
-            </Route>
-            <Route path="/" exact>
-              <Home />
-            </Route>
+            {
+              routes.map((route, i) => {
+                const {
+                  path,
+                  Component,
+                  props,
+                  childProps
+                } = route;
+                console.log(route);
+
+                return (props && props.auth)
+                  ? <GuardRoute key={i} path={path} {...props}>
+                    <Component {...childProps} />
+                  </GuardRoute>
+                  : <Route key={i} path={path} {...props}>
+                    <Component {...childProps} />
+                  </Route>
+              })
+            }
           </Switch>
         </div>
       </div >
